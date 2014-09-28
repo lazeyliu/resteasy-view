@@ -31,6 +31,8 @@ import cn.azel.resteasy.response.ModelAndView;
 @Produces("*/*")
 public class TemplateProvider implements MessageBodyWriter<ModelAndView> {
 	private static Log logger = LogFactory.getLog(TemplateProvider.class);
+	protected final String PARAM_TEMPLATE_RENDER = "rest-template-render";
+	protected final String PARAM_PREFIX_PATH = "rest-prefix-path";
 
 	public static String PREFIX_PATH = "/WEB-INF";
 
@@ -46,7 +48,26 @@ public class TemplateProvider implements MessageBodyWriter<ModelAndView> {
 	 * Returns true if and only if the templating extension is enabled and the method contains the <code>@ResponseTemplate</code> annotation.
 	 */
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-
+		if (render == null) {
+			String templateClass = context.getInitParameter(PARAM_TEMPLATE_RENDER);
+			//
+			try {
+				if (templateClass != null && !"".equals(templateClass.trim())) {
+					render = (TemplateRender) Class.forName(templateClass).newInstance();
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("unable to load render impl.", e);
+			}
+			//
+			if (render != null) {
+				logger.debug("Initializing TemplateRender [" + templateClass + "]");
+				render.init(context);
+			}
+			String prefix_path = context.getInitParameter(PARAM_PREFIX_PATH);
+			if (prefix_path != null && !"".equals(prefix_path.trim())) {
+				TemplateProvider.PREFIX_PATH = prefix_path;
+			}
+		}
 		return true;
 	}
 
