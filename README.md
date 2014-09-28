@@ -16,3 +16,12 @@ configuration：
 		<param-name>template-render</param-name>
 		<param-value>cn.azel.resteasy.render.impl.FreeMarkerRender</param-value>
 	</context-param>
+
+use in code:
+	
+	@GET
+	@Path("/test")
+	public ModelAndView get() {
+		ModelAndView mv = new ModelAndView("/index.ftl");
+		return mv;
+	}
